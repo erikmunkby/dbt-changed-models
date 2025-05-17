@@ -32,19 +32,21 @@ jobs:
           echo "${{ steps.modified-models.outputs.select-statement }}"
 
       - name: Setup python
+        if: steps.modified-models.outputs.models != ''
         uses: actions/setup-python@v5
         with:
           python-version: 3.13
           cache: pip
 
       - name: Install required dependencies
-        shell: bash
+        if: steps.modified-models.outputs.models != ''
         run: |
           pip install dbt-core dbt-duckdb
 
       - name: Build using select statement
+        if: steps.modified-models.outputs.models != ''
         run: |
-          cd dbt
+          cd tests/dbt_sample_project
           dbt deps
           dbt build --target pull-request-ci --select ${{ steps.modified-models.outputs.select-statement }}
         env:
