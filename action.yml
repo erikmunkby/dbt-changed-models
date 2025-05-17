@@ -1,0 +1,103 @@
+name: dbt state compare
+description: Lists all files with state:modified or state:new
+
+inputs:
+  dbt-dir:
+    description: The dbt project directory
+    required: true
+  python-packages:
+    description: A space separated list of python packages required for your dbt project
+    required: true
+  dbt-target:
+    description: The dbt profile to target in in comparison
+    required: true
+
+  # Optional inputs
+  state-type:
+    description: |
+      A choice between `modified` or `new`, default `modified`
+      See dbt docs for more info:
+      https://docs.getdbt.com/reference/node-selection/methods
+    required: false
+    default: modified
+  temp-dir:
+    description: Temporary directory the dbt manifest.json will be stored
+    required: false
+    default: __dbt_state_check_temp_dir
+  dbt-target-dir:
+    description: The dbt target directory, default `target`
+    required: false
+    default: target
+
+outputs:
+  models:
+    description: A newline separated list of modified models
+    value: ${{ steps.modified-models.outputs.models }}
+
+  select-statement:
+    description: |
+      A prepared select statement containing all models 
+      together with upstream and downstream dependenceis
+    value: ${{ steps.select-statement.outputs.statement }}
+
+runs:
+  using: composite
+
+  steps:
+    # ------------ Setup python and dependencies ------------
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+        cache: pip
+
+    - name: Install required dependencies
+      shell: bash
+      run: |
+        pip install dbt-core ${{ inputs.python-packages }}
+
+    # ------------ Check out branches HEAD (source) and BASE (target) ------------
+    - name: Check out base branch (PR target)
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.base.ref }}
+        path: base
+        fetch-depth: 0
+
+    - name: Check out head branch (PR source)
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+        path: head
+        fetch-depth: 0
+
+    # ------------ Build manifest and compare states ------------
+    - name: Build dbt manifest.json from base (PR target)
+      shell: bash
+      run: |
+        cd base/${{ inputs.dbt-dir }}
+        dbt deps --quiet
+        dbt parse --target ${{ inputs.dbt-target }} --quiet
+
+        mkdir -p ~/${{ inputs.temp-dir }}
+        cp ${{ inputs.dbt-target-dir }}/manifest.json ~/${{ inputs.temp-dir }}/manifest.json
+
+    - name: List modified models
+      id: modified-models
+      shell: bash
+      run: |
+        cd head/${{ inputs.dbt-dir }}
+        models=$(dbt ls --target ${{ inputs.dbt-target }} --state ~/${{ inputs.temp-dir }} --select state:${{ inputs.state-type }} --quiet)
+
+        echo "models<<EOF" >> $GITHUB_OUTPUT
+        echo "$models" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Build prepared select statement
+      id: select-statement
+      shell: bash
+      run: |
+        statement=$(echo "${{ steps.modified-models.outputs.models}}" | sed 's/^/+&/' | sed 's/$/+/' | paste -sd' ' -)
+        echo "statement<<EOF" >> $GITHUB_OUTPUT
+        echo "$statement" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT

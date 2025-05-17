@@ -1,0 +1,12 @@
+dbt_changed_models:
+  target: dev
+  outputs:
+    dev: &config
+      type: duckdb
+      path: data.duckdb
+      schema: dev
+      threads: 4
+
+    pull-request-ci:
+      <<: *config
+      schema: "pr_{{ env_var('PULL_REQUEST_NBR')}}"

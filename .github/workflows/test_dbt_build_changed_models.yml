@@ -1,0 +1,51 @@
+name: Test dbt-changed-models action
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-action:
+    name: Test dbt-changed-models
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Run the action
+      - name: Get modified models
+        id: modified-models
+        uses: ./
+        with:
+          dbt-dir: tests/dbt_sample_project
+          dbt-target: dev
+          python-packages: dbt-duckdb
+          state-type: modified
+          temp-dir: mytempdir
+          dbt-target-dir: target
+
+      - name: List modified models
+        run: |
+          echo "------------ Changed models ------------"
+          echo "${{ steps.modified-models.outputs.models }}"
+          echo "----------- Select statement -----------"
+          echo "${{ steps.modified-models.outputs.select-statement }}"
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+          cache: pip
+
+      - name: Install required dependencies
+        shell: bash
+        run: |
+          pip install dbt-core dbt-duckdb
+
+      - name: Build using select statement
+        run: |
+          cd dbt
+          dbt deps
+          dbt build --target pull-request-ci --select ${{ steps.modified-models.outputs.select-statement }}
+        env:
+          PULL_REQUEST_NBR: ${{ github.event.pull_request.number }}

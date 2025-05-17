@@ -1,0 +1,22 @@
+name: Cleanup PR schemas
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  cleanup-schemas:
+    name: Cleanup PR schemas
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cleanup PR schema
+        run: |
+          echo "Cleaning up dbt schemas for PR #${{ github.event.pull_request.number }}"
+          # pseudo code:
+          # for schema with prefix pr_${{ github.event.pull_request.number }}:
+          #     drop schema
