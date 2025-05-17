@@ -1,4 +1,4 @@
-name: dbt state compare
+name: dbt-changed-models
 description: Lists all files with state:modified or state:new
 
 branding:

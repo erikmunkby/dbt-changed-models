@@ -7,7 +7,6 @@ This action compares the current PR branch against its base and outputs:
 
 Useful for running targeted CI checks or partial dbt builds only when models change.
 
----
 
 ## 📦 Features
 - Detects models with `state:modified` or `state:new`
@@ -17,7 +16,10 @@ Useful for running targeted CI checks or partial dbt builds only when models cha
 
 Additionally, with `state:modified` any models dependant on a macro will also be listed.
 For more information see [dbt select by state](https://docs.getdbt.com/reference/node-selection/methods#state)
----
+
+For more info:
+- Check out [demo project](./tests/dbt_sample_project/)
+- Check out [action in PR](https://github.com/erikmunkby/dbt-changed-models/pull/3)
 
 ## 🚀 Usage
 
@@ -27,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: your-org/dbt-changed-models@v1
+      - uses: erikmunkby/dbt-changed-models@v1
         id: diff
         with:
           dbt-dir: my_dbt_project
