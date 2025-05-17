@@ -1,6 +1,10 @@
 name: dbt state compare
 description: Lists all files with state:modified or state:new
 
+branding:
+  icon: "git-branch"
+  color: "orange"
+
 inputs:
   dbt-dir:
     description: The dbt project directory
