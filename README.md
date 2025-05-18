@@ -17,9 +17,9 @@ Useful for running targeted CI checks or partial dbt builds only when models cha
 Additionally, with `state:modified` any models dependant on a macro will also be listed.
 For more information see [dbt select by state](https://docs.getdbt.com/reference/node-selection/methods#state)
 
-For more info:
-- Check out [demo project](./tests/dbt_sample_project/)
-- Check out [action in PR](https://github.com/erikmunkby/dbt-changed-models/pull/3)
+Also check out:
+- [demo project in this repo](./tests/dbt_sample_project/)
+- [action in PR](https://github.com/erikmunkby/dbt-changed-models/pull/3)
 
 ## 🚀 Usage
 
