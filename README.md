@@ -22,7 +22,6 @@ Also check out:
 - [action in PR](https://github.com/erikmunkby/dbt-changed-models/pull/3)
 
 ## 🚀 Usage
-
 ```yaml
 jobs:
   dbt-diff:
@@ -36,14 +35,16 @@ jobs:
           python-packages: dbt-postgres
           dbt-target: dev
 
+      # Using the `models` output
       - name: Echo changed models
         run: |
           echo "Changed models:"
           echo "${{ steps.diff.outputs.models }}"
 
+      # Using the `select-statement` output
       - name: Use select statement
         run: |
-          dbt run --select "${{ steps.diff.outputs.select-statement }}"
+          dbt [run|test|build] --select "${{ steps.diff.outputs.select-statement }}"
 ```
 
 ## ⚙️ Inputs
