@@ -62,14 +62,14 @@ runs:
 
     # ------------ Check out branches HEAD (source) and BASE (target) ------------
     - name: Check out base branch (PR target)
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ github.event.pull_request.base.ref }}
         path: base
         fetch-depth: 0
 
     - name: Check out head branch (PR source)
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         ref: ${{ github.event.pull_request.head.ref }}
         path: head
